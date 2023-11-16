@@ -1,0 +1,5 @@
+pystray
+requests
+urllib3
+psutil
+pillow
