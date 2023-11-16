@@ -11,16 +11,23 @@
   <img src="https://github.com/iholston/heimerdinger/assets/32341824/dd778b6c-f664-4d4d-9842-030421b3073a", width=200>
 </p>
 
-## About
-Heimerdinger is a simple background task that will always Auto Accept your League of Legends game, allowing you to use your Queue time however you like! It does not use your mouse or keyboard and will work even if League of Legends is minimized or in the background (works for TFT as well).
+<h1 align='center'>
+About
+</h1>
+<p align="center">
+Heimerdinger is a simple background task that will always Auto Accept your League of Legends games 🕹️☕ </br>
+Doesn't use your 🖱️ or ⌨️ and works even if league is minimized or in the background </br></br>
+</p>
 
 </br>
 <p align="left">
   <img src="https://github.com/iholston/heimerdinger/assets/32341824/06e5b20a-9a11-4f17-8e89-3847801e44df">
 </p>
 
-## Download
-Download the [latest release](https://github.com/iholston/heimerdinger/releases)
+## Getting Started
+- Download the [latest release](https://github.com/iholston/heimerdinger/releases)
+- Double click on the .exe
+- An icon will appear in the tray, right click to pause or exit 👍
 
 ## Development
 - Install [Python](https://www.python.org/downloads/)
