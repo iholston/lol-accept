@@ -36,7 +36,7 @@ Doesn't use your 🖱️ or ⌨️ and works even if league is minimized or in t
 
 ## Packaging to .exe
 - ```pip install pyinstaller```
-- ```pyinstaller --onefile --noconsole --add-data "icon.png:." main.py```
+- ```pyinstaller --onefile --noconsole --name heimerdinger --add-data "icon.png:." main.py```
 
 ## Disclaimer
 This program isn’t endorsed by Riot Games and doesn’t reflect the views or opinions of Riot Games or anyone officially involved in producing or managing League of Legends. League of Legends and Riot Games are trademarks or registered trademarks of Riot Games, Inc. League of Legends © Riot Games, Inc.
