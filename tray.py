@@ -1,6 +1,7 @@
-import pystray
 import os
 import sys
+
+import pystray
 from PIL import Image
 
 
