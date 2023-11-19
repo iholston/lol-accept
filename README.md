@@ -15,7 +15,7 @@
 About
 </h1>
 <p align="center">
-Heimerdinger is a simple Windows tray application that will always Auto Accept your League of Legends games 🕹️☕ </br>
+Heimerdinger is a simple tray application that will always Auto Accept your League of Legends games 🕹️☕ </br>
 Doesn't use your 🖱️ or ⌨️ and works even if league is minimized or in the background </br></br>
 </p>
 
