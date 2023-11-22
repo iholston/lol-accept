@@ -1,3 +1,7 @@
+"""
+Interfaces with LCU-API to accept League of Legends Ready Check
+"""
+
 import threading
 import os
 from base64 import b64encode
@@ -8,6 +12,7 @@ import psutil
 
 
 class Acceptor:
+    """Class that monitors the state of the League Client and accepts matches"""
 
     def __init__(self):
         self.league_proc = 'LeagueClient.exe'
@@ -24,7 +29,8 @@ class Acceptor:
         self.terminate = False
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-    def run(self):
+    def run(self) -> None:
+        """Check if League is running and accept matches when they pop"""
         if not self.paused:
             pid = self.get_pid()
             if pid != -1:
@@ -41,6 +47,7 @@ class Acceptor:
             threading.Timer(1.0, self.run).start()
 
     def parse_lockfile(self) -> None:
+        """Parses lcu-api information from the League of Legends lockfile"""
         lockfile = open(self.find_lockfile_path(), 'r')
         data = lockfile.read()
         lockfile.close()
@@ -54,6 +61,7 @@ class Acceptor:
         self.headers = {'Authorization': 'Basic {}'.format(userpass)}
 
     def find_lockfile_path(self) -> str:
+        """Finds path to League of Legends lockfile"""
         path = None
         for pid in psutil.pids():
             if psutil.Process(pid).name() == self.league_proc:
@@ -62,12 +70,14 @@ class Acceptor:
             return os.path.join(os.path.dirname(path), 'lockfile')
 
     def request(self, method: str, path: str):
+        """Sends requests to lcu-api"""
         url = "{}://{}:{}{}".format(self.protocol, self.host, self.port, path)
         fn = getattr(self.session, method)
         r = fn(url, verify=False, headers=self.headers, timeout=3)
         return r
 
-    def get_pid(self):
+    def get_pid(self) -> int:
+        """Finds pid for League process, -1 if not found"""
         for proc in psutil.process_iter():
             if proc.name() == self.league_proc:
                 return proc.pid
