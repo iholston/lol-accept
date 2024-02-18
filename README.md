@@ -1,21 +1,9 @@
-<h1 align='center'>
+<h1>
   LoL-Play
 </h1>
 
-<p align='center'>
-  League of Legends Queue Auto Acceptor
-</p>
-
-<p align='center'>
-  <!---<img src="https://github.com/iholston/heimerdinger/assets/32341824/8f76782e-2f2d-4895-b283-221af5a748cd", width=200>-->
-  <img src="https://github.com/iholston/heimerdinger/assets/32341824/dd778b6c-f664-4d4d-9842-030421b3073a", width=200>
-</p>
-
-<h1 align='center'>
-About
-</h1>
-<p align="center">
-LoL-Play is a simple tray application that will always Auto Accept your League of Legends games 🕹️☕ </br>
+<p>
+LoL-Play is a Windows tray application that will always Auto Accept your League of Legends games 🕹️☕ </br>
 Doesn't use your 🖱️ or ⌨️ and works even if league is minimized or in the background </br></br>
 </p>
 
