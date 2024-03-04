@@ -4,7 +4,7 @@ use tray_icon::menu::{Menu, MenuEvent, MenuItem, PredefinedMenuItem};
 use tray_icon::TrayIconBuilder;
 use winit::event_loop::{ControlFlow, EventLoopBuilder};
 
-const ICON_BYTES: &'static [u8] = include_bytes!("../resources/icon.png");
+const ICON_BYTES: &'static [u8] = include_bytes!("../resources/icon.ico");
 
 pub struct TrayApp {
     acceptor: Acceptor,
@@ -68,7 +68,7 @@ impl TrayApp {
 
     fn load_icon() -> tray_icon::Icon {
         let (icon_rgba, icon_width, icon_height) = {
-            let image = image::load_from_memory_with_format(&ICON_BYTES, image::ImageFormat::Png)
+            let image = image::load_from_memory_with_format(&ICON_BYTES, image::ImageFormat::Ico)
                 .expect("Failed to open icon path")
                 .into_rgba8();
             let (width, height) = image.dimensions();
