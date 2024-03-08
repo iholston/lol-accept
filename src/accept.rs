@@ -2,7 +2,8 @@ use anyhow::anyhow;
 use base64::encode;
 use reqwest::blocking::Client;
 use reqwest::header::{HeaderMap, HeaderValue};
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::{fs, path::Path, thread, time::Duration};
 
 #[derive(Clone)]
@@ -61,8 +62,8 @@ pub struct Acceptor {
     game_pname: String,
     game_pid: u32,
     session: Option<LeagueSession>,
-    pub paused: Arc<Mutex<bool>>,
-    pub terminate: Arc<Mutex<bool>>,
+    pub paused: Arc<AtomicBool>,
+    pub terminate: Arc<AtomicBool>,
 }
 
 impl Acceptor {
@@ -71,14 +72,14 @@ impl Acceptor {
             game_pname: String::from("LeagueClient.exe"),
             game_pid: 0,
             session: None,
-            paused: Arc::new(Mutex::new(false)),
-            terminate: Arc::new(Mutex::new(false)),
+            paused: Arc::new(AtomicBool::new(false)),
+            terminate: Arc::new(AtomicBool::new(false)),
         }
     }
 
     pub fn run(&mut self) {
-        while !*self.terminate.lock().unwrap() {
-            if !*self.paused.lock().unwrap() && self.game_running() {
+        while !self.terminate.load(Ordering::SeqCst) {
+            if !self.paused.load(Ordering::SeqCst) && self.game_running() {
                 if let Some(_) = self.session.as_ref().filter(|ls| ls.id == self.game_pid) {
                     if self.get_game_phase() == "ReadyCheck" {
                         self.accept_match();

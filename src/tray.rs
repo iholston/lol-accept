@@ -2,6 +2,7 @@ use crate::Acceptor;
 use std::thread;
 use tray_icon::menu::{Menu, MenuEvent, MenuItem, PredefinedMenuItem};
 use tray_icon::TrayIconBuilder;
+use std::sync::atomic::Ordering;
 use winit::event_loop::{ControlFlow, EventLoopBuilder};
 
 const ICON_BYTES: &'static [u8] = include_bytes!("../resources/icon.ico");
@@ -43,23 +44,18 @@ impl TrayApp {
         });
         let event_loop = EventLoopBuilder::new().build().unwrap();
         let _ = event_loop.run(move |_event, event_loop| {
-            event_loop.set_control_flow(ControlFlow::WaitUntil(
-                std::time::Instant::now() + std::time::Duration::from_millis(3),
-            ));
+            event_loop.set_control_flow(ControlFlow::Wait);
             if let Ok(event) = menu_channel.try_recv() {
                 if event.id() == menu_start.id() {
-                    let mut paused = self.acceptor.paused.lock().unwrap();
-                    *paused = false;
+                    self.acceptor.paused.store(false, Ordering::SeqCst);
                     menu_start.set_enabled(false);
                     menu_pause.set_enabled(true);
                 } else if event.id() == menu_pause.id() {
-                    let mut paused = self.acceptor.paused.lock().unwrap();
-                    *paused = true;
+                    self.acceptor.paused.store(true, Ordering::SeqCst);
                     menu_start.set_enabled(true);
                     menu_pause.set_enabled(false);
                 } else if event.id() == menu_quit.id() {
-                    let mut terminate = self.acceptor.terminate.lock().unwrap();
-                    *terminate = true;
+                    self.acceptor.terminate.store(true, Ordering::SeqCst);
                     event_loop.exit();
                 }
             }
