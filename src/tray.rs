@@ -1,9 +1,11 @@
-use crate::Acceptor;
 use std::sync::atomic::Ordering;
 use std::thread;
+
 use tray_icon::menu::{Menu, MenuEvent, MenuItem, PredefinedMenuItem};
 use tray_icon::{Icon, TrayIcon, TrayIconBuilder};
 use winit::event_loop::{ControlFlow, EventLoopBuilder};
+
+use crate::Acceptor;
 
 const ICON_BYTES: &'static [u8] = include_bytes!("../resources/icon.ico");
 

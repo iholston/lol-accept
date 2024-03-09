@@ -1,10 +1,10 @@
-use anyhow::anyhow;
+use std::io::{Error, ErrorKind};
+use std::sync::{atomic::{AtomicBool, Ordering}, Arc};
+use std::{fs, path::Path, thread, time::Duration};
+
 use base64::encode;
 use reqwest::blocking::Client;
 use reqwest::header::{HeaderMap, HeaderValue};
-use std::sync::Arc;
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::{fs, path::Path, thread, time::Duration};
 
 #[derive(Clone)]
 struct LeagueSession {
@@ -25,24 +25,24 @@ impl LeagueSession {
                 }
             }
         }
-        let auth: String;
-        let url: String;
         let contents = fs::read_to_string(lockfile_path)?;
         let data: Vec<&str> = contents.split(":").collect();
-        if data.len() == 5 {
-            auth = format!(
-                "Basic {}",
-                encode(format!("{}:{}", "riot".to_string(), data[3].to_string()).as_bytes())
-            );
-            url = format!(
-                "{}://{}:{}",
-                data[4].to_string(),
-                String::from("127.0.0.1"),
-                data[2].to_string()
-            );
-        } else {
-            return Err(anyhow!("Could not parse data from lockfile").into());
+        if data.len() != 5 {
+            return Err(Box::new(Error::new(
+                ErrorKind::Other,
+                "Could not parse lockfile",
+            )));
         }
+        let auth = format!(
+            "Basic {}",
+            encode(format!("{}:{}", "riot".to_string(), data[3].to_string()).as_bytes())
+        );
+        let url = format!(
+            "{}://{}:{}",
+            data[4].to_string(),
+            String::from("127.0.0.1"),
+            data[2].to_string()
+        );
         let mut headers = HeaderMap::new();
         headers.insert("Authorization", HeaderValue::from_str(&auth)?);
         let session = Client::builder()
