@@ -81,8 +81,14 @@ impl Acceptor {
         while !self.terminate.load(Ordering::SeqCst) {
             if !self.paused.load(Ordering::SeqCst) && self.game_running() {
                 if let Some(_) = self.session.as_ref().filter(|ls| ls.id == self.game_pid) {
+                    if self.get_game_phase() == "Matchmaking" {
+                        thread::sleep(Duration::from_millis(300));
+                        continue;
+                    }
                     if self.get_game_phase() == "ReadyCheck" {
                         self.accept_match();
+                        thread::sleep(Duration::from_secs(1));
+                        continue;
                     }
                 } else {
                     match LeagueSession::new(self.game_pid) {
