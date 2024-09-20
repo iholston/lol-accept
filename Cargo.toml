@@ -4,12 +4,21 @@ version = "2.1.1"
 edition = "2021"
 
 [dependencies]
+lazy_static = "1.5.0"
+reqwest = { version = "0.12.5", features = ["json", "rustls-tls", "blocking"] }
+serde_derive = "1.0.205"
+serde_json = "1.0.122"
 base64 = "0.13.0"
 image = "0.23.14"
-reqwest = { version = "0.11.24", features = ["blocking"] }
 tasklist = "0.2.13"
 tray-icon = "0.11.3"
 winit = "0.29.13"
+regex = "1.10.6"
+powershell_script = "1.1.0"
+serde = { version = "1.0.205", features = ["derive"] }
+strum = "0.26.3"
+strum_macros = "0.26.4"
+
 
 [build-dependencies]
 winres = "0.1.12"
