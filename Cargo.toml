@@ -18,6 +18,7 @@ powershell_script = "1.1.0"
 serde = { version = "1.0.205", features = ["derive"] }
 strum = "0.26.3"
 strum_macros = "0.26.4"
+winreg = "0.52.0"
 
 
 [build-dependencies]

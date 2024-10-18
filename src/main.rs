@@ -3,6 +3,7 @@
 mod cmd;
 mod lcu;
 mod tray;
+mod reg;
 
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
