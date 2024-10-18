@@ -3,6 +3,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use tray_icon::{Icon, TrayIcon, TrayIconBuilder};
 use tray_icon::menu::{Menu, MenuEvent, MenuItem, Submenu, PredefinedMenuItem};
 use winit::event_loop::{ControlFlow, EventLoopBuilder};
+
 use crate::reg;
 
 const ICON_BYTES: &'static [u8] = include_bytes!("../assets/icon.ico");
@@ -19,8 +20,8 @@ fn load_icon() -> Icon {
     Icon::from_rgba(icon_rgba, icon_width, icon_height).expect("Failed to open icon")
 }
 
+#[allow(dead_code)]
 pub struct TrayApp {
-    #[allow(dead_code)]
     icon: TrayIcon,
     menu_start: MenuItem,
     menu_pause: MenuItem,
@@ -32,8 +33,12 @@ pub struct TrayApp {
 
 impl TrayApp {
     pub fn new() -> Self {
-        let _ = reg::cleanup_stale_registry();
+        // Checks registry and updates potentially stale path
         let in_startup = reg::is_in_startup().unwrap_or(false);
+        let removed_stale_key = reg::cleanup_stale_registry().unwrap_or(false);
+        if in_startup && removed_stale_key {
+            let _ = reg::add_to_startup();
+        }
 
         let tray_menu = Menu::new();
         let menu_start = MenuItem::new("Start", false, None);

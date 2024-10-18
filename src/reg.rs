@@ -49,7 +49,7 @@ pub fn is_in_startup() -> io::Result<bool> {
     }
 }
 
-pub fn cleanup_stale_registry() -> io::Result<()> {
+pub fn cleanup_stale_registry() -> io::Result<(bool)> {
     let current_path = get_executable_path()?;
     let hkcu = RegKey::predef(HKEY_CURRENT_USER);
     let run_key = hkcu.open_subkey_with_flags(RUN_REGISTRY_PATH, KEY_READ | KEY_WRITE)?;
@@ -57,6 +57,7 @@ pub fn cleanup_stale_registry() -> io::Result<()> {
         Ok(stored_path) => {
             if stored_path != current_path {
                 run_key.delete_value(APP_NAME)?;
+                return Ok(true);
             }
         },
         Err(ref e) if e.kind() == io::ErrorKind::NotFound => {
@@ -64,5 +65,5 @@ pub fn cleanup_stale_registry() -> io::Result<()> {
         },
         Err(e) => return Err(e),
     }
-    Ok(())
+    Ok(false)
 }
