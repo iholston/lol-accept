@@ -7,7 +7,7 @@ LoL-Accept is a Windows tray application that Auto Accepts your League of Legend
 - Doesn't use your 🖱️ or ⌨️
 - Extremely lightweight so you can leave it running in the background
 - Works even if League is minimized or in the background 
-- Can be toggled to run on startup</br>
+- Can be toggled to launch on Windows startup</br>
 
 ## Getting Started
 - Download the [latest release](https://github.com/iholston/lol-accept/releases)
