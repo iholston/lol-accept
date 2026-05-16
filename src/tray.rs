@@ -1,16 +1,15 @@
-use std::sync::Arc;
-use std::sync::atomic::{AtomicBool, Ordering};
+use tao::event_loop::{ControlFlow, EventLoopBuilder};
+use tray_icon::menu::{Menu, MenuEvent, MenuItem, PredefinedMenuItem, Submenu};
 use tray_icon::{Icon, TrayIcon, TrayIconBuilder};
-use tray_icon::menu::{Menu, MenuEvent, MenuItem, Submenu, PredefinedMenuItem};
-use winit::event_loop::{ControlFlow, EventLoopBuilder};
 
+use crate::app::AppController;
 use crate::reg;
 
-const ICON_BYTES: &'static [u8] = include_bytes!("../assets/icon.ico");
+const ICON_BYTES: &[u8] = include_bytes!("../assets/icon.ico");
 
 fn load_icon() -> Icon {
     let (icon_rgba, icon_width, icon_height) = {
-        let image = image::load_from_memory_with_format(&ICON_BYTES, image::ImageFormat::Ico)
+        let image = image::load_from_memory_with_format(ICON_BYTES, image::ImageFormat::Ico)
             .expect("Failed to open icon path")
             .into_rgba8();
         let (width, height) = image.dimensions();
@@ -32,9 +31,8 @@ pub struct TrayApp {
 }
 
 impl TrayApp {
-    pub fn new() -> Self {
+    pub fn new(in_startup: bool) -> Self {
         // Checks registry and updates potentially stale path
-        let in_startup = reg::is_in_startup().unwrap_or(false);
         let removed_stale_key = reg::cleanup_stale_registry().unwrap_or(false);
         if in_startup && removed_stale_key {
             let _ = reg::add_to_startup();
@@ -49,10 +47,7 @@ impl TrayApp {
         let menu_quit = MenuItem::new("Quit", true, None);
 
         submenu_startup
-            .append_items(&[
-                &submenu_yes,
-                &submenu_no,
-            ])
+            .append_items(&[&submenu_yes, &submenu_no])
             .unwrap();
 
         tray_menu
@@ -84,38 +79,35 @@ impl TrayApp {
         }
     }
 
-    pub fn show(&mut self, pause: Arc<AtomicBool>, terminate: Arc<AtomicBool>) {
+    pub fn show(self, controller: AppController) {
         let menu_channel = MenuEvent::receiver();
-        let event_loop = EventLoopBuilder::new().build().unwrap();
+        let event_loop = EventLoopBuilder::new().build();
 
-        event_loop
-            .run(move |_event, event_loop| {
-                event_loop.set_control_flow(ControlFlow::Wait);
-                if let Ok(event) = menu_channel.try_recv() {
-                    if event.id() == self.menu_start.id() {
-                        pause.store(false, Ordering::SeqCst);
-                        self.menu_start.set_enabled(false);
-                        self.menu_pause.set_enabled(true);
-                    } else if event.id() == self.menu_pause.id() {
-                        pause.store(true, Ordering::SeqCst);
-                        self.menu_start.set_enabled(true);
-                        self.menu_pause.set_enabled(false);
-                    } else if event.id() == self.submenu_yes.id() {
-                        self.submenu_yes.set_enabled(false);
-                        self.submenu_no.set_enabled(true);
-                        let _ = reg::cleanup_stale_registry();
-                        let _ = reg::add_to_startup();
-                    } else if event.id() == self.submenu_no.id() {
-                        self.submenu_no.set_enabled(false);
-                        self.submenu_yes.set_enabled(true);
-                        let _ = reg::cleanup_stale_registry();
-                        let _ = reg::remove_from_startup();
-                    }else if event.id() == self.menu_quit.id() {
-                        terminate.store(true, Ordering::SeqCst);
-                        event_loop.exit();
-                    }
+        event_loop.run(move |_event, _event_loop, control_flow| {
+            *control_flow = ControlFlow::Wait;
+
+            if let Ok(event) = menu_channel.try_recv() {
+                if event.id() == self.menu_start.id() {
+                    controller.resume();
+                    self.menu_start.set_enabled(false);
+                    self.menu_pause.set_enabled(true);
+                } else if event.id() == self.menu_pause.id() {
+                    controller.pause();
+                    self.menu_start.set_enabled(true);
+                    self.menu_pause.set_enabled(false);
+                } else if event.id() == self.submenu_yes.id() {
+                    controller.add_to_startup();
+                    self.submenu_yes.set_enabled(false);
+                    self.submenu_no.set_enabled(true);
+                } else if event.id() == self.submenu_no.id() {
+                    controller.remove_from_startup();
+                    self.submenu_no.set_enabled(false);
+                    self.submenu_yes.set_enabled(true);
+                } else if event.id() == self.menu_quit.id() {
+                    controller.quit();
+                    *control_flow = ControlFlow::Exit;
                 }
-            })
-            .unwrap();
+            }
+        });
     }
 }

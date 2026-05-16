@@ -1,5 +1,7 @@
-use std::time::Duration;
 use lazy_static::lazy_static;
+use std::time::Duration;
+
+use crate::cmd::LcuAuth;
 
 lazy_static! {
     static ref CLIENT: reqwest::blocking::Client = {
@@ -17,29 +19,51 @@ pub fn make_client() -> &'static reqwest::blocking::Client {
     &CLIENT
 }
 
-pub fn accept_match(endpoint: &str) {
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GameflowPhase {
+    Lobby,
+    Matchmaking,
+    ReadyCheck,
+    Unknown,
+}
+
+impl GameflowPhase {
+    fn from_lcu_response(value: &str) -> Self {
+        match value.trim_matches('"') {
+            "Lobby" => Self::Lobby,
+            "Matchmaking" => Self::Matchmaking,
+            "ReadyCheck" => Self::ReadyCheck,
+            _ => Self::Unknown,
+        }
+    }
+}
+
+pub fn accept_match(auth: &LcuAuth) {
     let client = make_client();
-    let url = format!("{endpoint}/lol-matchmaking/v1/ready-check/accept");
+    let url = format!("{}/lol-matchmaking/v1/ready-check/accept", auth.base_url);
     let _ = client
         .post(url)
         .version(reqwest::Version::HTTP_2)
+        .basic_auth("riot", Some(&auth.token))
         .header(reqwest::header::ACCEPT, "application/json")
         .send();
 }
 
-pub fn get_phase(endpoint: &str) -> String {
-    let mut phase = String::from("Unknown");
-    let url = format!("{endpoint}/lol-gameflow/v1/gameflow-phase");
+pub fn get_phase(auth: &LcuAuth) -> GameflowPhase {
+    let url = format!("{}/lol-gameflow/v1/gameflow-phase", auth.base_url);
     let client = make_client();
     let response = client
         .get(url)
         .version(reqwest::Version::HTTP_2)
+        .basic_auth("riot", Some(&auth.token))
         .header(reqwest::header::ACCEPT, "application/json")
-        .send()
-        .ok();
-    if let Some(response) = response {
-        phase = response.text().unwrap_or(phase);
-        phase = phase.trim_matches('"').to_string();
+        .send();
+
+    match response {
+        Ok(response) => {
+            let phase = response.text().unwrap_or_default();
+            GameflowPhase::from_lcu_response(&phase)
+        }
+        Err(_) => GameflowPhase::Unknown,
     }
-    phase
 }

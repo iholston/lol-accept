@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use lazy_static::lazy_static;
+use serde::{Deserialize, Serialize};
 
 const LCU_PORT_KEY: &str = "--app-port=";
 const LCU_TOKEN_KEY: &str = "--remoting-auth-token=";
@@ -8,21 +8,24 @@ const LCU_COMMAND: &str = "Get-CimInstance Win32_Process -Filter \"name = 'Leagu
 
 lazy_static! {
     static ref PORT_REGEXP: regex::Regex = regex::Regex::new(r"--app-port=\d+").unwrap();
-    static ref TOKEN_REGEXP: regex::Regex = regex::Regex::new(r"--remoting-auth-token=\S+").unwrap();
-    static ref DIR_REGEXP: regex::Regex = regex::Regex::new(r#"--install-directory=(.*?)""#).unwrap();
-    static ref MAC_DIR_REGEXP: regex::Regex = regex::Regex::new(r"--install-directory=([^\s]+).*?--").unwrap();
+    static ref TOKEN_REGEXP: regex::Regex =
+        regex::Regex::new(r"--remoting-auth-token=\S+").unwrap();
+    static ref DIR_REGEXP: regex::Regex =
+        regex::Regex::new(r#"--install-directory=(.*?)""#).unwrap();
+    static ref MAC_DIR_REGEXP: regex::Regex =
+        regex::Regex::new(r"--install-directory=([^\s]+).*?--").unwrap();
 }
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
-pub struct CommandLineOutput {
-    pub auth_url: String,
+pub struct LcuAuth {
+    pub base_url: String,
     pub token: String,
     pub port: String,
-    pub dir: String,
+    pub install_dir: String,
 }
 
 #[cfg(target_os = "windows")]
-pub fn get_commandline() -> CommandLineOutput {
+pub fn get_lcu_auth() -> LcuAuth {
     use powershell_script::PsScriptBuilder;
 
     let ps = PsScriptBuilder::new()
@@ -34,21 +37,19 @@ pub fn get_commandline() -> CommandLineOutput {
 
     match ps.run(LCU_COMMAND) {
         Ok(out) => {
-            let output = out.stdout();
-
-            if output.is_some() {
-                return match_stdout(&String::from(output.unwrap()));
+            if let Some(output) = out.stdout() {
+                return match_stdout(&output);
             }
         }
         Err(err) => println!("cmd error: {:?}", err),
     }
 
-    CommandLineOutput {
+    LcuAuth {
         ..Default::default()
     }
 }
 
-fn match_stdout(stdout: &str) -> CommandLineOutput {
+fn match_stdout(stdout: &str) -> LcuAuth {
     let port = if let Some(port_match) = PORT_REGEXP.find(stdout) {
         port_match.as_str().replace(LCU_PORT_KEY, "")
     } else {
@@ -64,7 +65,7 @@ fn match_stdout(stdout: &str) -> CommandLineOutput {
         "".to_string()
     };
 
-    let auth_url = make_auth_url(&token, &port);
+    let base_url = make_base_url(&port);
 
     let raw_dir = if let Some(dir_match) = DIR_REGEXP.find(stdout) {
         dir_match.as_str().replace(LCU_DIR_KEY, "")
@@ -72,16 +73,16 @@ fn match_stdout(stdout: &str) -> CommandLineOutput {
         "".to_string()
     };
     let output_dir = raw_dir.replace('\"', "");
-    let dir = format!("{output_dir}/");
+    let install_dir = format!("{output_dir}/");
 
-    CommandLineOutput {
-        auth_url,
+    LcuAuth {
+        base_url,
         token,
         port,
-        dir,
+        install_dir,
     }
 }
 
-fn make_auth_url(token: &String, port: &String) -> String {
-    format!("https://riot:{token}@127.0.0.1:{port}")
+fn make_base_url(port: &str) -> String {
+    format!("https://127.0.0.1:{port}")
 }
