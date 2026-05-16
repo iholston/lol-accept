@@ -1,20 +1,17 @@
-use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
+use std::sync::LazyLock;
 
 const LCU_PORT_KEY: &str = "--app-port=";
 const LCU_TOKEN_KEY: &str = "--remoting-auth-token=";
 const LCU_DIR_KEY: &str = "--install-directory=";
 const LCU_COMMAND: &str = "Get-CimInstance Win32_Process -Filter \"name = 'LeagueClientUx.exe'\" | Select-Object -ExpandProperty CommandLine";
 
-lazy_static! {
-    static ref PORT_REGEXP: regex::Regex = regex::Regex::new(r"--app-port=\d+").unwrap();
-    static ref TOKEN_REGEXP: regex::Regex =
-        regex::Regex::new(r"--remoting-auth-token=\S+").unwrap();
-    static ref DIR_REGEXP: regex::Regex =
-        regex::Regex::new(r#"--install-directory=(.*?)""#).unwrap();
-    static ref MAC_DIR_REGEXP: regex::Regex =
-        regex::Regex::new(r"--install-directory=([^\s]+).*?--").unwrap();
-}
+static PORT_REGEXP: LazyLock<regex::Regex> =
+    LazyLock::new(|| regex::Regex::new(r"--app-port=\d+").unwrap());
+static TOKEN_REGEXP: LazyLock<regex::Regex> =
+    LazyLock::new(|| regex::Regex::new(r"--remoting-auth-token=\S+").unwrap());
+static DIR_REGEXP: LazyLock<regex::Regex> =
+    LazyLock::new(|| regex::Regex::new(r#"--install-directory=(.*?)""#).unwrap());
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct LcuAuth {

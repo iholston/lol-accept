@@ -1,19 +1,17 @@
-use lazy_static::lazy_static;
+use std::sync::LazyLock;
 use std::time::Duration;
 
 use crate::cmd::LcuAuth;
 
-lazy_static! {
-    static ref CLIENT: reqwest::blocking::Client = {
-        reqwest::blocking::Client::builder()
-            .use_rustls_tls()
-            .danger_accept_invalid_certs(true)
-            .timeout(Duration::from_secs(2))
-            .no_proxy()
-            .build()
-            .unwrap()
-    };
-}
+static CLIENT: LazyLock<reqwest::blocking::Client> = LazyLock::new(|| {
+    reqwest::blocking::Client::builder()
+        .use_rustls_tls()
+        .danger_accept_invalid_certs(true)
+        .timeout(Duration::from_secs(2))
+        .no_proxy()
+        .build()
+        .unwrap()
+});
 
 pub fn make_client() -> &'static reqwest::blocking::Client {
     &CLIENT
