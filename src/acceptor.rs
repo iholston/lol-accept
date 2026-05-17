@@ -30,23 +30,16 @@ pub fn run(receiver: Receiver<AcceptorCommand>) {
         }
 
         match lcu::get_phase(&auth) {
-            lcu::GameflowPhase::Lobby => {
-                thread::sleep(Duration::from_millis(1000));
-                continue;
+            Ok(lcu::GameflowPhase::Matchmaking) => thread::sleep(Duration::from_millis(500)),
+            Ok(lcu::GameflowPhase::ReadyCheck) => {
+                let _ = lcu::accept_match(&auth);
+                thread::sleep(Duration::from_millis(2000));
+            },
+            Ok(_) => thread::sleep(Duration::from_millis(5000)),
+            Err(_) => {
+                thread::sleep(Duration::from_millis(10000));
+                auth = cmd::get_lcu_auth();
             }
-            lcu::GameflowPhase::Matchmaking => {
-                thread::sleep(Duration::from_millis(300));
-                continue;
-            }
-            lcu::GameflowPhase::ReadyCheck => {
-                lcu::accept_match(&auth);
-                thread::sleep(Duration::from_millis(1000));
-                continue;
-            }
-            _ => {}
         }
-
-        auth = cmd::get_lcu_auth();
-        thread::sleep(Duration::from_millis(5000));
     }
 }
