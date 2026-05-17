@@ -34,7 +34,7 @@ pub fn run(receiver: Receiver<AcceptorCommand>) {
             Ok(lcu::GameflowPhase::ReadyCheck) => {
                 let _ = lcu::accept_match(&auth);
                 thread::sleep(Duration::from_millis(2000));
-            },
+            }
             Ok(_) => thread::sleep(Duration::from_millis(5000)),
             Err(_) => {
                 thread::sleep(Duration::from_millis(10000));

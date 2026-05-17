@@ -1,16 +1,15 @@
 [package]
 name = "lol-accept"
-version = "3.0.1"
+version = "3.2.1"
 edition = "2021"
 
 [dependencies]
 reqwest = { version = "0.12.5", default-features = false, features = ["rustls-tls", "blocking"] }
-image = "0.25.2"
+image = { version = "0.25.2", default-features = false, features = ["ico"] }
 tray-icon = "0.24.0"
 tao = "0.35.2"
 regex = "1.10.6"
 powershell_script = "1.1.0"
-serde = { version = "1.0.205", features = ["derive"] }
 winreg = "0.52.0"
 
 

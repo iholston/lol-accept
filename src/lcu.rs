@@ -55,7 +55,6 @@ pub fn accept_match(auth: &LcuAuth) -> Result<(), reqwest::Error> {
     let url = format!("{}/lol-matchmaking/v1/ready-check/accept", auth.base_url);
     let _ = client
         .post(url)
-        .version(reqwest::Version::HTTP_2)
         .basic_auth("riot", Some(&auth.token))
         .header(reqwest::header::ACCEPT, "application/json")
         .send()?
@@ -69,7 +68,6 @@ pub fn get_phase(auth: &LcuAuth) -> Result<GameflowPhase, reqwest::Error> {
     let client = make_client();
     let response = client
         .get(url)
-        .version(reqwest::Version::HTTP_2)
         .basic_auth("riot", Some(&auth.token))
         .header(reqwest::header::ACCEPT, "application/json")
         .send()?
