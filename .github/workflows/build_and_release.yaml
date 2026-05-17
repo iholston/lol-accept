@@ -1,50 +1,59 @@
-name: Build
+name: Build and Release
 
 on:
   push:
     tags:
       - '*'
 
+permissions:
+  contents: write
+
 jobs:
-  build:
-    runs-on: [windows-latest]
+  build-windows:
+    runs-on: windows-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          override: true
+        uses: dtolnay/rust-toolchain@stable
 
-      - name: Build artifact
+      - name: Check
+        run: cargo check
+
+      - name: Clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Test
+        run: cargo test
+
+      - name: Build release
         run: cargo build --release
 
+      - name: Package Windows artifact
+        shell: pwsh
+        run: Compress-Archive -Path target/release/lol-accept.exe -DestinationPath lol-accept-windows-x86_64.zip
+
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: lol-accept
-          path: target/release/lol-accept.exe
-          
+          name: lol-accept-windows-x86_64
+          path: lol-accept-windows-x86_64.zip
+
   release:
-    needs: build
+    needs: build-windows
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
 
-    - name: Download artifact
-      uses: actions/download-artifact@v3
-      with:
-        name: lol-accept
-
-    - name: Push to release
-      uses: ncipollo/release-action@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        replacesArtifacts: false
-        artifacts: lol-accept.exe
+      - name: Publish GitHub release
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          replacesArtifacts: false
+          artifacts: artifacts/**/*.zip
