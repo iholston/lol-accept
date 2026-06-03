@@ -1,24 +1,18 @@
-use serde::{Deserialize, Serialize};
 use std::sync::LazyLock;
 
 const LCU_PORT_KEY: &str = "--app-port=";
 const LCU_TOKEN_KEY: &str = "--remoting-auth-token=";
-const LCU_DIR_KEY: &str = "--install-directory=";
 const LCU_COMMAND: &str = "Get-CimInstance Win32_Process -Filter \"name = 'LeagueClientUx.exe'\" | Select-Object -ExpandProperty CommandLine";
 
 static PORT_REGEXP: LazyLock<regex::Regex> =
     LazyLock::new(|| regex::Regex::new(r"--app-port=\d+").unwrap());
 static TOKEN_REGEXP: LazyLock<regex::Regex> =
     LazyLock::new(|| regex::Regex::new(r"--remoting-auth-token=\S+").unwrap());
-static DIR_REGEXP: LazyLock<regex::Regex> =
-    LazyLock::new(|| regex::Regex::new(r#"--install-directory=(.*?)""#).unwrap());
 
-#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone)]
 pub struct LcuAuth {
     pub base_url: String,
     pub token: String,
-    pub port: String,
-    pub install_dir: String,
 }
 
 #[cfg(target_os = "windows")]
@@ -64,20 +58,7 @@ fn match_stdout(stdout: &str) -> LcuAuth {
 
     let base_url = make_base_url(&port);
 
-    let raw_dir = if let Some(dir_match) = DIR_REGEXP.find(stdout) {
-        dir_match.as_str().replace(LCU_DIR_KEY, "")
-    } else {
-        "".to_string()
-    };
-    let output_dir = raw_dir.replace('\"', "");
-    let install_dir = format!("{output_dir}/");
-
-    LcuAuth {
-        base_url,
-        token,
-        port,
-        install_dir,
-    }
+    LcuAuth { base_url, token }
 }
 
 fn make_base_url(port: &str) -> String {

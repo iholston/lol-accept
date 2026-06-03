@@ -1,7 +1,7 @@
 use std::sync::mpsc::Sender;
 
 use crate::acceptor::AcceptorCommand;
-use crate::reg;
+use crate::platform::startup;
 
 pub struct AppController {
     acceptor_tx: Sender<AcceptorCommand>,
@@ -25,12 +25,10 @@ impl AppController {
     }
 
     pub fn add_to_startup(&self) {
-        let _ = reg::cleanup_stale_registry();
-        let _ = reg::add_to_startup();
+        let _ = startup::enable();
     }
 
     pub fn remove_from_startup(&self) {
-        let _ = reg::cleanup_stale_registry();
-        let _ = reg::remove_from_startup();
+        let _ = startup::disable();
     }
 }

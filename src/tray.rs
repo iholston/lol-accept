@@ -3,7 +3,6 @@ use tray_icon::menu::{Menu, MenuEvent, MenuItem, PredefinedMenuItem, Submenu};
 use tray_icon::{Icon, TrayIcon, TrayIconBuilder};
 
 use crate::app::AppController;
-use crate::reg;
 
 const ICON_BYTES: &[u8] = include_bytes!("../assets/icon.ico");
 
@@ -32,12 +31,6 @@ pub struct TrayApp {
 
 impl TrayApp {
     pub fn new(in_startup: bool) -> Self {
-        // Checks registry and updates potentially stale path
-        let removed_stale_key = reg::cleanup_stale_registry().unwrap_or(false);
-        if in_startup && removed_stale_key {
-            let _ = reg::add_to_startup();
-        }
-
         let tray_menu = Menu::new();
         let menu_start = MenuItem::new("Start", false, None);
         let menu_pause = MenuItem::new("Pause", true, None);
