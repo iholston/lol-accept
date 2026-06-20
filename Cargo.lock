@@ -1019,7 +1019,7 @@ checksum = "90ed8c1e510134f979dbc4f070f87d4313098b704861a105fe34231c70a3901c"
 
 [[package]]
 name = "lol-accept"
-version = "3.2.1"
+version = "3.2.2"
 dependencies = [
  "image",
  "powershell_script",
