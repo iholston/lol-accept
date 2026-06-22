@@ -20,6 +20,10 @@ impl AppController {
         let _ = self.acceptor_tx.send(AcceptorCommand::Start);
     }
 
+    pub fn dodge_lobby(&self) {
+        let _ = self.acceptor_tx.send(AcceptorCommand::DodgeLobby);
+    }
+
     pub fn quit(&self) {
         let _ = self.acceptor_tx.send(AcceptorCommand::Shutdown);
     }

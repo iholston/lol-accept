@@ -23,6 +23,7 @@ pub struct TrayApp {
     icon: TrayIcon,
     menu_start: MenuItem,
     menu_pause: MenuItem,
+    menu_dodge_lobby: MenuItem,
     submenu_startup: Submenu,
     submenu_yes: MenuItem,
     submenu_no: MenuItem,
@@ -34,6 +35,7 @@ impl TrayApp {
         let tray_menu = Menu::new();
         let menu_start = MenuItem::new("Start", false, None);
         let menu_pause = MenuItem::new("Pause", true, None);
+        let menu_dodge_lobby = MenuItem::new("Dodge", true, None);
         let submenu_startup = Submenu::new("Run on Startup", true);
         let submenu_yes = MenuItem::new("Yes", !in_startup, None);
         let submenu_no = MenuItem::new("No", in_startup, None);
@@ -47,6 +49,7 @@ impl TrayApp {
             .append_items(&[
                 &menu_start,
                 &menu_pause,
+                &menu_dodge_lobby,
                 &PredefinedMenuItem::separator(),
                 &submenu_startup,
                 &PredefinedMenuItem::separator(),
@@ -65,6 +68,7 @@ impl TrayApp {
             icon,
             menu_start,
             menu_pause,
+            menu_dodge_lobby,
             submenu_startup,
             submenu_yes,
             submenu_no,
@@ -88,6 +92,8 @@ impl TrayApp {
                     controller.pause();
                     self.menu_start.set_enabled(true);
                     self.menu_pause.set_enabled(false);
+                } else if event.id() == self.menu_dodge_lobby.id() {
+                    controller.dodge_lobby();
                 } else if event.id() == self.submenu_yes.id() {
                     controller.add_to_startup();
                     self.submenu_yes.set_enabled(false);

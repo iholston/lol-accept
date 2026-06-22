@@ -8,6 +8,7 @@ use crate::platform::lcu_auth;
 pub enum AcceptorCommand {
     Start,
     Pause,
+    DodgeLobby,
     Shutdown,
 }
 
@@ -20,6 +21,17 @@ pub fn run(receiver: Receiver<AcceptorCommand>) {
             match command {
                 AcceptorCommand::Start => paused = false,
                 AcceptorCommand::Pause => paused = true,
+                AcceptorCommand::DodgeLobby => {
+                    if auth.is_none() {
+                        auth = lcu_auth::discover();
+                    }
+
+                    if let Some(current_auth) = &auth {
+                        if lcu::dodge_lobby(current_auth).is_err() {
+                            auth = None;
+                        }
+                    }
+                }
                 AcceptorCommand::Shutdown => return,
             }
         }

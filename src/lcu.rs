@@ -63,6 +63,19 @@ pub fn accept_match(auth: &LcuAuth) -> Result<(), reqwest::Error> {
     Ok(())
 }
 
+pub fn dodge_lobby(auth: &LcuAuth) -> Result<(), reqwest::Error> {
+    let url = format!("{}/lol-lobby/v2/lobby", auth.base_url);
+    let client = make_client();
+    client
+        .delete(url)
+        .basic_auth("riot", Some(&auth.token))
+        .header(reqwest::header::ACCEPT, "application/json")
+        .send()?
+        .error_for_status()?;
+
+    Ok(())
+}
+
 pub fn get_phase(auth: &LcuAuth) -> Result<GameflowPhase, reqwest::Error> {
     let url = format!("{}/lol-gameflow/v1/gameflow-phase", auth.base_url);
     let client = make_client();
